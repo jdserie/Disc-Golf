@@ -1,82 +1,69 @@
-@import url(//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
-
-fieldset, label { margin: 0; padding: 0; }
-body{ margin: 20px;}
-
-/****** Style Star Rating Widget *****/
-
-.rating { 
-  border: none;
-  float: left;
+:root {
+  color-scheme: light;
+  --paper: #f3f1e7;
+  --ink: #172c24;
+  --forest: #183e30;
+  --wash: #fffdf5;
+  --line: #d8dfce;
+  --lime: #d8eb88;
+  font-family: "DM Sans", system-ui, sans-serif;
+  line-height: 1.55;
 }
-
-.rating > input { display: none; } 
-.rating > label:before { 
-  margin: 5px;
-  font-size: 1.25em;
-  font-family: FontAwesome;
-  display: inline-block;
-  content: "\f005";
-}
-
-.rating > .half:before { 
-  content: "\f089";
-  position: absolute;
-}
-
-.rating > label { 
-  color: #ddd; 
- float: right; 
-}
-
-/***** CSS Magic to Highlight Stars on Hover *****/
-
-.rating > input:checked ~ label, /* show gold star when clicked */
-.rating:not(:checked) > label:hover, /* hover current star */
-.rating:not(:checked) > label:hover ~ label { color: #FFD700;  } /* hover previous stars in list */
-
-.rating > input:checked + label:hover, /* hover current star when changing rating */
-.rating > input:checked ~ label:hover,
-.rating > label:hover ~ input:checked ~ label, /* lighten current selection */
-.rating > input:checked ~ label:hover ~ label { color: #FFED85;  } 
-
-
-
-li {
-  color: white;
-}
-
-small {
-  color:white;
-}
-
-p {
-  color: white;
-}
-.account-heading{
-  color: white;
-}
-
-legend {
-  color: white;
-}
-
-label {
-  color:white;
-}
-
-div {
-  color: white;
-}
-
-.side_article{
-  height: 100%;
-}
-
-.form-text{
-  color:white !important;
-}
-
-.text-secondary{
-  color:white !important;
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; color: var(--ink); background: var(--paper); }
+a { color: inherit; text-underline-offset: .2em; }
+button, input, textarea, select { font: inherit; }
+:focus-visible { outline: 3px solid #c05b21; outline-offset: 4px; }
+.wrap { width: min(1180px, calc(100% - 2.5rem)); margin-inline: auto; }
+.skip { position: fixed; z-index: 5; left: 1rem; top: -5rem; padding: .6rem 1rem; background: white; }
+.skip:focus { top: 1rem; }
+.topbar { background: var(--forest); color: white; }
+.topbar-inner, .site-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 1rem; flex-wrap: wrap; }
+.topbar nav, .site-footer nav { display: flex; align-items: center; gap: clamp(.8rem, 2.7vw, 2rem); flex-wrap: wrap; }
+.topbar a { text-decoration: none; }
+.topbar a:hover { text-decoration: underline; }
+.brand { display: inline-flex; align-items: center; gap: .65rem; font-weight: 800; }
+.nav-action { color: inherit; background: none; padding: 0; border: 0; cursor: pointer; }
+.nav-action:hover { text-decoration: underline; }
+.disc-mark { position: relative; flex: none; display: inline-block; width: 1.55rem; height: 1.55rem; color: var(--lime); border: .13rem solid currentColor; border-radius: 50%; transform: rotate(-23deg); }
+.disc-mark::before, .disc-mark::after { content: ""; position: absolute; inset: 26% 10%; border-top: .1rem solid currentColor; border-radius: 50%; }
+.disc-mark::after { inset: 48% 10% 8%; }
+.hero { position: relative; isolation: isolate; overflow: hidden; display: grid; align-items: center; min-height: clamp(420px, 55vw, 590px); background: #132e24; color: white; border-radius: 22px; margin-top: 1.5rem; }
+.hero-image { position: absolute; inset: 0 0 0 auto; z-index: -2; height: 100%; width: 75%; object-fit: cover; object-position: 55% 52%; }
+.hero::after { content: ""; position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, #102b20 4%, #102b20 23%, #102b20d9 43%, #102b2033 82%); }
+.hero-content { padding: clamp(1.4rem, 6vw, 5.5rem); }
+.hero-wordmark { display: flex; align-items: flex-start; gap: .7rem; }
+.hero-wordmark .disc-mark { width: clamp(1.6rem, 4vw, 3rem); height: clamp(1.6rem, 4vw, 3rem); margin-top: .35rem; }
+.hero h1 { font-size: clamp(3.1rem, 9vw, 8.25rem); line-height: .82; margin: 0; letter-spacing: -.065em; font-weight: 900; }
+.hero h1 span { color: var(--lime); }
+.hero p { font-size: clamp(1rem, 2vw, 1.25rem); max-width: 34ch; margin: 1.55rem 0 1.35rem; }
+.section { margin-block: clamp(1.6rem, 4vw, 3rem); }
+h1, h2, h3 { line-height: 1.13; letter-spacing: -.025em; }
+.section > h1 { font-size: clamp(2rem, 5vw, 4rem); margin-block: .4rem 1rem; }
+h2 { font-size: clamp(1.4rem, 3vw, 2.1rem); }
+.tile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 1rem; margin-top: 1.15rem; }
+.panel { border: 1px solid var(--line); border-radius: 14px; background: var(--wash); padding: 1.2rem; min-width: 0; overflow-wrap: anywhere; }
+.panel h2, .panel h3 { margin-top: 0; }
+.meta { color: #3e5a4a; }
+.button { display: inline-block; padding: .58rem .95rem; border: 1px solid var(--forest); border-radius: 7px; background: var(--forest); color: white; text-decoration: none; font-weight: 700; cursor: pointer; }
+.button:hover { filter: brightness(1.13); }
+.accent { background: var(--lime); color: var(--ink); border-color: var(--lime); }
+.outline { background: transparent; color: var(--forest); }
+.inline { display: flex; align-items: end; flex-wrap: wrap; gap: .75rem; }
+label { display: block; font-weight: 700; margin-bottom: .25rem; }
+input:not([type=checkbox]):not([type=hidden]), textarea, select { display: block; width: 100%; padding: .52rem .65rem; border: 1px solid #70816f; border-radius: 6px; background-color: white; color: var(--ink); }
+.inline input { min-width: min(15rem, 65vw); }
+.form-panel { max-width: 36rem; margin-block: 1.2rem; }
+.form-panel > div { margin-bottom: 1rem; }
+.form-panel .helptext { font-size: .9rem; }
+.errorlist { color: #993329; }
+.review-list { display: grid; gap: .7rem; }
+.pagination { display: flex; gap: 1rem; margin-block: 1rem; }
+.notice { background: #dfecc2; border-radius: 8px; padding: .6rem 1rem; }
+.account-img { width: 5rem; height: 5rem; border-radius: 50%; object-fit: cover; }
+.site-footer { margin-top: 2rem; border-top: 1px solid var(--line); color: #435950; }
+@media (max-width: 600px) {
+  .wrap { width: calc(100% - 1.5rem); }
+  .hero-image { width: 100%; object-position: 60% 49%; }
+  .hero::after { background: linear-gradient(90deg, #102b20ed 0%, #102b20a8 58%, #102b205e 100%); }
 }

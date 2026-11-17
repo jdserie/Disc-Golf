@@ -30,8 +30,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('thoughts', models.CharField(max_length=1800)),
-                ('author', models.ForeignKey(on_delete='CASCADE', to=settings.AUTH_USER_MODEL)),
-                ('crse', models.ForeignKey(on_delete='CASCADE', to='course.Course')),
+                ('author', models.ForeignKey(on_delete=models.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('crse', models.ForeignKey(on_delete=models.CASCADE, to='course.Course')),
             ],
         ),
     ]

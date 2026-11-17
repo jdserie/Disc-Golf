@@ -1,25 +1,8 @@
 {% extends 'base.html' %}
-
-{% load crispy_forms_tags %}
-{% load static %}
+{% block title %}Create an account · Indy Disc Golf{% endblock %}
 {% block content %}
-<div class="container-fluid" style="background-color:  #635E4F">
-    <div class="content-section">
-        <form method="POST" style ="color: white;">
-            {% csrf_token %}
-            <fieldset class="form-group" style="color:white;">
-                <legend class="border-bottom mb-4" style="color:white;">Join Today</legend>
-                {{ form|crispy }}
-            </fieldset>
-            <div class="form-group" style="color: white;">
-                <button class="btn btn-primary" type="submit" style="background-color: #343a40!important; border: none;">Sign Up</button>
-            </div>
-        </form>
-        <div class="border-top pt-3">
-            <small style= "color: white;">
-                Already have an account? <a class="ml-2" href="{% url 'login' %}" style= "color: white;">Sign In</a>
-            </small>
-        </div>
-    </div>
-</div>
+<section class="section"><h1>Create an account</h1>
+  <form method="post" class="panel form-panel">{% csrf_token %}{{ form.as_div }}<button class="button">Create account</button></form>
+  <p>Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+</section>
 {% endblock %}
