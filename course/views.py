@@ -1,89 +1,107 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import Http404, HttpResponseBadRequest
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
-from . import models
+from .forms import CourseForm, ReviewForm
+from .models import Course, Review
+
+
+def posted_id(request, key='id'):
+    value = request.POST.get(key, '')
+    if not value.isascii() or not value.isdecimal() or len(value) > 19:
+        raise Http404
+    identifier = int(value)
+    if identifier > 2**63 - 1:
+        raise Http404
+    return identifier
+
 
 def home(request):
-    # when the home function is requested, redirects users to the course_list.html page
-    if request.method =="POST":
-        added_course = models.Course.objects.get(id=request.POST['id'])
-        added_course.play = request.POST['play']
-        added_course.save()
+    if request.method == 'POST':
+        if not request.user.is_staff:
+            raise PermissionDenied
+        value = request.POST.get('play')
+        if value not in ('True', 'False'):
+            return HttpResponseBadRequest('Invalid course status.')
+        course = get_object_or_404(Course, pk=posted_id(request))
+        course.play = value == 'True'
+        course.save(update_fields=['play'])
         return redirect('courseHome')
-    course_list = models.Course.objects.filter(play=False)
-    play_course = models.Course.objects.filter(play=True)
 
-    context = {
-        'course_list': course_list,
-        "play_course": play_course
-    }
+    query = request.GET.get('q', '').strip()[:120]
+    courses = Course.objects.filter(play=False).order_by('course_name', 'pk')
+    if query:
+        courses = courses.filter(Q(course_name__icontains=query) | Q(city__icontains=query))
+    return render(request, 'course/course_list.html', {
+        'course_list': courses,
+        'play_course': Course.objects.filter(play=True).order_by('course_name') if request.user.is_staff else (),
+        'query': query,
+    })
 
-    return render(request, 'course/course_list.html', context=context)
-    
 
+@login_required
 def add(request):
-    # when the add function is requested, saves in any inputs of the given prompt on the course/add/ page and then redirects the user to the Couse page.
-    if request.method == "POST":
-        added_course = models.Course(course_name=request.POST['course_name'],city=request.POST['city'], holes=request.POST['holes'], tee_type=request.POST['tee_type'])
-        added_course.save()
-        return redirect('courseHome')
+    form = CourseForm(request.POST if request.method == 'POST' else None)
+    if request.method == 'POST' and form.is_valid():
+        course = form.save()
+        return redirect('courseInfo', course.pk)
+    return render(request, 'course/course_add.html', {'form': form})
 
-    # If nothing is added into the addCourse prompt, reload the course_add.html page for re-entry of the prompt or to exit the page.
-    return render(request, 'course/course_add.html')
 
-# THIS WAS SUPER ANNOYING
+@require_POST
 def my_delete(request):
-    if request.method == "POST":
-        del_course = models.Course.objects.get(id=request.POST['id'])
-        del_course.delete()
-        return redirect('courseHome')
+    if not request.user.is_staff:
+        raise PermissionDenied
+    get_object_or_404(Course, pk=posted_id(request), play=True).delete()
+    return redirect('courseHome')
 
 
 def course_detail(request, course_id):
-    ind_course = models.Course.objects.get(id=course_id)
-    review_list = models.Review.objects.filter(crse=ind_course)
-    paginator = Paginator(review_list, 5)
-    page = request.GET.get('page')
-    contacts = paginator.get_page(page)
-    context = {
-        'ind_course': ind_course,
-        "review_list": contacts,
-    }
-    return render(request, 'course/course_detail.html', context=context)
+    course = get_object_or_404(Course, pk=course_id)
+    return render_detail(request, course, ReviewForm())
+
+
+def render_detail(request, course, form, status=200):
+    reviews = course.review_set.select_related('author').order_by('-pk')
+    return render(request, 'course/course_detail.html', {
+        'ind_course': course,
+        'review_list': Paginator(reviews, 5).get_page(request.GET.get('page')),
+        'form': form,
+    }, status=status)
+
 
 def review(request):
-    if request.method == "POST":
-        added_review = models.Review.objects.get(id=request.POST['id'])
-        added_review.user = request.POST['user']
-        added_review.crse = request.POST['course']
-        added_review.thoughts = request.POST['thoughts']
-        added_review.save()
+    reviews = Review.objects.select_related('author', 'crse').order_by('-pk')
+    return render(request, 'course/reviews.html', {
+        'review_list': Paginator(reviews, 5).get_page(request.GET.get('page')),
+    })
 
-        return redirect('reviewCourse')
-    review_list = models.Review.objects.all()
-    paginator = Paginator(review_list, 5)
-    page = request.GET.get('page')
-    contacts = paginator.get_page(page)
 
-    context = {
-        "review_list": contacts,
-    }
-
-    return render(request, 'course/reviews.html', context=context)
-
+@login_required
+@require_POST
 def add_review(request):
-    if request.method == "POST":
-        r_course = models.Course.objects.get(id=request.POST["crse"])
-        added_review = models.Review(author=request.user, thoughts=request.POST['thoughts'], crse=r_course)
-        added_review.save()
-        return redirect('courseInfo', r_course.id)
+    course = get_object_or_404(Course, pk=posted_id(request, 'crse'), play=False)
+    form = ReviewForm(request.POST)
+    if not form.is_valid():
+        return render_detail(request, course, form, status=400)
+    entry = form.save(commit=False)
+    entry.crse = course
+    entry.author = request.user
+    entry.save()
+    messages.success(request, 'Your review was posted.')
+    return redirect('courseInfo', course.pk)
 
-    return render(request, 'course/course_detail.html')
 
-
+@login_required
+@require_POST
 def review_delete(request):
-    if request.method == "POST":
-        added_review = models.Review.objects.get(id=request.POST['id'])
-        added_review.delete()
-        return redirect('reviewCourse')
+    entries = Review.objects.all()
+    if not request.user.is_staff:
+        entries = entries.filter(author=request.user)
+    get_object_or_404(entries, pk=posted_id(request)).delete()
+    return redirect('reviewCourse')

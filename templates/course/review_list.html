@@ -1,0 +1,21 @@
+<div class="review-list">
+  {% for review in review_list %}
+  <article class="panel">
+    {% if not ind_course %}<h2><a href="{% url 'courseInfo' review.crse_id %}">{{ review.crse.course_name }}</a></h2>{% endif %}
+    <p class="meta">{{ review.author.username }}</p>
+    <p>{{ review.thoughts|linebreaksbr }}</p>
+    {% if user == review.author or user.is_staff %}
+    <form action="{% url 'deleteReview' %}" method="post">
+      {% csrf_token %}<input type="hidden" name="id" value="{{ review.pk }}"><button class="button outline">Delete review</button>
+    </form>
+    {% endif %}
+  </article>
+  {% empty %}<p>There are no reviews yet.</p>{% endfor %}
+</div>
+{% if review_list.has_other_pages %}
+<nav class="pagination" aria-label="Review pages">
+  {% if review_list.has_previous %}<a href="?page={{ review_list.previous_page_number }}">Previous</a>{% endif %}
+  <span>Page {{ review_list.number }} of {{ review_list.paginator.num_pages }}</span>
+  {% if review_list.has_next %}<a href="?page={{ review_list.next_page_number }}">Next</a>{% endif %}
+</nav>
+{% endif %}
